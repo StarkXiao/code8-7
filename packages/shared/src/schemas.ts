@@ -339,6 +339,11 @@ export const vagueItemQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(200).default(50),
 });
 
+/** 成员统计：多少天没人处理算"滞留"，默认 3 天 */
+export const memberStatsQuerySchema = z.object({
+  staleDays: z.coerce.number().int().min(1).max(30).default(3),
+});
+
 export const audioQuerySchema = z.object({
   recipeId: idSchema.optional(),
   kind: z.enum(AUDIO_KINDS).optional(),

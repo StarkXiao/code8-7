@@ -26,6 +26,7 @@ const ACTION_LABEL: Record<string, string> = {
   'vague_item.confirm': '重新确认了结论',
   'vague_item.mark_unresolvable': '标记为口语留白',
   'vague_item.reopen': '重新打开了条目',
+  'vague_item.nudge': '提醒了滞留条目的负责人',
   'verification.create': '提交了复做验证',
   'audio.upload': '上传了语音',
   'audio.softDelete': '删除了语音（软删除）',

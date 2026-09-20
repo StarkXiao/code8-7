@@ -259,6 +259,77 @@ export interface NotificationDto {
   createdAt: string;
 }
 
+/* ------------------------------------------------------------------ */
+/* 成员贡献统计与滞留条目                                                */
+/* ------------------------------------------------------------------ */
+
+/** 单个成员的贡献量与积压情况 */
+export interface MemberContributionDto {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  role: WorkspaceRole;
+  contributions: {
+    /** 上传的语音段数 */
+    audioUploaded: number;
+    /** 提出的待澄清条目数 */
+    itemsCreated: number;
+    /** 回答追问的次数 */
+    answersGiven: number;
+    /** 归纳成可复做规格的次数 */
+    itemsResolved: number;
+    /** 提交复做验证的次数 */
+    verificationsDone: number;
+    /** 发表的评论数 */
+    commentsPosted: number;
+    total: number;
+  };
+  backlog: {
+    /** 指派给 TA、仍在等答复的条目（open / asked） */
+    toAnswer: number;
+    /** 其中已经超过滞留阈值的 */
+    staleToAnswer: number;
+  };
+}
+
+/** 一条长时间没人处理的条目，连同它的负责人 */
+export interface StaleItemDto {
+  id: string;
+  recipeId: string;
+  recipeTitle: string;
+  rawPhrase: string;
+  category: VagueCategory;
+  status: VagueStatus;
+  /** 距上次有人处理已经多少天 */
+  staleDays: number;
+  /** 负责人：被指派人优先，否则是提出人 */
+  owner: { id: string; displayName: string } | null;
+  ownerKind: 'assignee' | 'creator';
+  /** 已经被提醒过几次（决定下一次提醒的级别） */
+  nudgeCount: number;
+  lastNudgedAt: string | null;
+  /** 冷却期是否已过、现在能否再次提醒 */
+  canNudge: boolean;
+  nextNudgeLevel: number;
+}
+
+export interface MemberStatsDto {
+  /** 多少天没人动算"滞留" */
+  staleDays: number;
+  /** 同一条目两次提醒之间的最小间隔（小时） */
+  nudgeCooldownHours: number;
+  members: MemberContributionDto[];
+  staleItems: StaleItemDto[];
+}
+
+export interface NudgeResultDto {
+  itemId: string;
+  /** 本次提醒执行到的级别（1..NUDGE_MAX_LEVEL） */
+  level: number;
+  notifiedUserIds: string[];
+  cooldownHours: number;
+}
+
 export interface ActivityLogDto {
   id: string;
   workspaceId: string;

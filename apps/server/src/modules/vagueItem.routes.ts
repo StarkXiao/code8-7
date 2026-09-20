@@ -7,9 +7,12 @@ import {
   fallbackQuestion,
   markUnresolvableSchema,
   matchVaguePhrases,
+  NUDGE_LEVEL_LABELS,
+  NUDGE_MAX_LEVEL,
   reopenVagueItemSchema,
   renderQuestionTemplate,
   resolveVagueItemSchema,
+  TERMINAL_VAGUE_STATUSES,
   updateVagueItemSchema,
   validateResolvedSpec,
   vagueItemQuerySchema,
@@ -36,6 +39,13 @@ import {
 } from '../services/access';
 import { logActivity } from '../services/activity';
 import { notify } from '../services/notify';
+import {
+  getNudgeState,
+  isInNudgeCooldown,
+  NUDGE_ACTION,
+  NUDGE_COOLDOWN_HOURS,
+  nudgeTargetsForLevel,
+} from '../services/stats';
 import { emitToWorkspace } from '../realtime/hub';
 import { toActivityDto, toAudioDto, toClipDto, toVagueItemDto } from '../services/serialize';
 import { z } from 'zod';
@@ -646,6 +656,89 @@ vagueItemRouter.post(
 
     emitToWorkspace(access.workspaceId, 'vague_item:updated', toVagueItemDto(item));
     send(res, toVagueItemDto(item));
+  }),
+);
+
+/* ------------------------------------------------------------------ */
+/* 逐级提醒（催促滞留条目）                                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * 对一条没人处理的条目发出提醒，级别随次数逐级升高：
+ * 第 1 次只提醒负责人，第 2 次加上能下结论的整理者，第 3 次提醒全体家庭成员。
+ *
+ * 只写通知与审计日志，不改条目本身 —— 催一下不算"处理了"，
+ * 条目的滞留计时（updatedAt）不该因此被重置。
+ */
+vagueItemRouter.post(
+  '/vague-items/:itemId/nudge',
+  asyncHandler(async (req, res) => {
+    const { itemId } = req.params;
+    const access = await assertVagueItemRole(req.auth!.userId, itemId!, 'viewer');
+
+    if ((TERMINAL_VAGUE_STATUSES as readonly string[]).includes(access.status)) {
+      throw new ApiError('VAGUE_INVALID_TRANSITION', '这条条目已经收口，不需要再提醒');
+    }
+
+    const item = await prisma.vagueItem.findUnique({ where: { id: itemId! } });
+    if (!item) throw notFound('待澄清条目');
+
+    const { count, lastNudgedAt } = await getNudgeState(itemId!);
+    if (isInNudgeCooldown(lastNudgedAt)) {
+      throw new ApiError(
+        'RATE_LIMITED',
+        `这条条目刚提醒过，${NUDGE_COOLDOWN_HOURS} 小时内不要重复催，给家人一点消化时间`,
+      );
+    }
+
+    // 负责人：被指派人优先，否则是提出人
+    const ownerId = item.assigneeId ?? item.createdBy;
+
+    // 逐级扩大提醒范围；如果某一级的目标只剩操作者自己（比如自己催自己负责的条目），
+    // 就继续往上升一级，保证"逐级提醒家庭成员"不落空
+    let level = Math.min(count + 1, NUDGE_MAX_LEVEL);
+    let targetIds: string[] = [];
+    while (level <= NUDGE_MAX_LEVEL) {
+      targetIds = [...new Set(await nudgeTargetsForLevel(level, ownerId, access.workspaceId))].filter(
+        (id) => id !== req.auth!.userId,
+      );
+      if (targetIds.length || level === NUDGE_MAX_LEVEL) break;
+      level += 1;
+    }
+
+    const staleDays = Math.max(0, Math.floor((Date.now() - item.updatedAt.getTime()) / (24 * 3600 * 1000)));
+
+    if (targetIds.length) {
+      await notify({
+        userIds: targetIds,
+        type: 'nudge',
+        payload: {
+          recipeId: item.recipeId,
+          itemId: item.id,
+          rawPhrase: item.rawPhrase,
+          level,
+          levelLabel: NUDGE_LEVEL_LABELS[level],
+          staleDays,
+          message: `「${item.rawPhrase}」已经 ${staleDays} 天没人处理了，帮忙推进一下`,
+        },
+      });
+    }
+
+    await logActivity({
+      workspaceId: access.workspaceId,
+      actorId: req.auth!.userId,
+      action: NUDGE_ACTION,
+      entityType: 'vague_item',
+      entityId: item.id,
+      after: { level, targetUserIds: targetIds, staleDays },
+    });
+
+    send(res, {
+      itemId: item.id,
+      level,
+      notifiedUserIds: targetIds,
+      cooldownHours: NUDGE_COOLDOWN_HOURS,
+    });
   }),
 );
 

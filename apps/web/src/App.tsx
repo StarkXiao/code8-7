@@ -11,6 +11,7 @@ import { JoinPage } from './features/workspace/JoinPage';
 import { WorkspaceListPage } from './features/workspace/WorkspaceListPage';
 import { WorkspaceHomePage } from './features/workspace/WorkspaceHomePage';
 import { MembersPage } from './features/workspace/MembersPage';
+import { StatsPage } from './features/stats/StatsPage';
 import { RecipeDetailPage } from './features/recipe/RecipeDetailPage';
 import { RecorderPage } from './features/recorder/RecorderPage';
 import { InboxPage } from './features/vagueItems/InboxPage';
@@ -85,6 +86,7 @@ export function App() {
         >
           <Route index element={<WorkspaceHomePage />} />
           <Route path="members" element={<MembersPage />} />
+          <Route path="stats" element={<StatsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="activity" element={<ActivityPage />} />
           <Route path="recipes/:recipeId" element={<RecipeDetailPage />} />

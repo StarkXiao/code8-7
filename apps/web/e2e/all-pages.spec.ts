@@ -251,6 +251,7 @@ function pageRoutes(data: Seeded): { path: string; expect: RegExp }[] {
     { path: '/', expect: /我的家庭空间/ },
     { path: base, expect: /全页面巡检厨房/ },
     { path: `${base}/members`, expect: /成员与参照物/ },
+    { path: `${base}/stats`, expect: /成员统计/ },
     { path: `${base}/notifications`, expect: /通知/ },
     { path: `${base}/activity`, expect: /操作日志/ },
     { path: recipe, expect: /全页面红烧肉/ },

@@ -150,6 +150,8 @@ origin/
 
 **口令入口有频次限制。** 登录与注册各自按 IP 做了 15 分钟 20 次的固定窗口限流（超限返回 `429 RATE_LIMITED`）。只限这两个入口，不影响 `/auth/me` 与 `/auth/refresh` —— 一家人常常共用出口 IP，限太宽会误伤自己人。
 
+**滞留条目有人管、有人催。** 「统计」页按成员汇总贡献量（录音/条目/答复/规格化/复做/评论）与积压（还等 TA 答复的条目数）；超过 N 天没人碰的非终态条目会被标出负责人（被指派人优先，否则是提出人）。提醒是逐级的：第一次只通知负责人，第二次加上能下结论的整理者，第三次通知全体家庭成员。同一条目 20 小时内只能催一次；提醒只写通知和审计日志、不改条目本身 —— 催一下不算"处理了"，滞留计时不会因此被重置。
+
 ---
 
 ## 与《项目文档.md》的差异
@@ -161,7 +163,7 @@ origin/
 | 波形组件 | WaveSurfer.js | 自研 canvas 波形（`Waveform.tsx`） | 峰值已存在数据库里，自绘更可控，少一个版本敏感依赖；框选片段的能力不变 |
 | 迁移执行 | `prisma migrate deploy` | `prisma migrate diff` 生成 SQL + `node:sqlite` 执行器 | 本机 Prisma schema engine 无法启动；SQL 仍由 schema.prisma 生成，DDL 不会漂移。写入的是标准 `_prisma_migrations` 表，日后可用 `prisma migrate deploy` 接管 |
 | 语言环境 | Node ≥ 20 | Node ≥ 22.5 | 迁移执行器用了内置 `node:sqlite`，换来零原生编译依赖 |
-| 通知类型 | — | 增加 `verification_passed` | 复做成功原本复用了 `published`，通知里会显示成"版本动态"，语义不对 |
+| 通知类型 | — | 增加 `verification_passed`、`nudge` | 复做成功原本复用了 `published`，通知里会显示成"版本动态"，语义不对；`nudge` 用于滞留条目的逐级提醒 |
 
 另外新增了一个文档里没有的接口 `POST /api/vague-items/:id/confirm`：复做失败后把降级为"暂定"的结论重新确认回"已确认"。没有它，那条闸门会把流程堵死。
 

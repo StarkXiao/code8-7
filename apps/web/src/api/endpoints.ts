@@ -13,7 +13,9 @@ import type {
   CreateVerificationInput,
   IngredientDto,
   KitchenReferenceDto,
+  MemberStatsDto,
   NotificationDto,
+  NudgeResultDto,
   RecipeCounters,
   RecipeDto,
   RecipeVersionDto,
@@ -238,7 +240,15 @@ export const vagueItemApi = {
     unwrap<VagueItemDto>(api.post(`/vague-items/${itemId}/mark-unresolvable`, { note })),
   reopen: (itemId: string, reason: string) =>
     unwrap<VagueItemDto>(api.post(`/vague-items/${itemId}/reopen`, { reason })),
+  nudge: (itemId: string) => unwrap<NudgeResultDto>(api.post(`/vague-items/${itemId}/nudge`)),
   history: (itemId: string) => unwrap<ActivityLogDto[]>(api.get(`/vague-items/${itemId}/history`)),
+};
+
+/* ---------------- 成员统计 ---------------- */
+
+export const statsApi = {
+  memberStats: (workspaceId: string, staleDays?: number) =>
+    unwrap<MemberStatsDto>(api.get(`/workspaces/${workspaceId}/member-stats`, { params: { staleDays } })),
 };
 
 /* ---------------- 评论 / 验证 / 通知 ---------------- */

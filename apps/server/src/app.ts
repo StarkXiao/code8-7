@@ -17,6 +17,7 @@ import { vagueItemRouter } from './modules/vagueItem.routes';
 import { commentRouter } from './modules/comment.routes';
 import { verificationRouter } from './modules/verification.routes';
 import { notificationRouter } from './modules/notification.routes';
+import { statsRouter } from './modules/stats.routes';
 import { runIntegrityScan } from './services/integrity';
 
 export function createApp(): Express {
@@ -92,6 +93,7 @@ export function createApp(): Express {
   app.use('/api', commentRouter);
   app.use('/api', verificationRouter);
   app.use('/api', notificationRouter);
+  app.use('/api', statsRouter);
 
   /* ---------------- 前端静态托管 ---------------- */
   if (env.hasWebBuild) {

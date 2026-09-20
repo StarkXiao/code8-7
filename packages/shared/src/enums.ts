@@ -61,8 +61,21 @@ export const NOTIFICATION_TYPES = [
   'verification_requested',
   'verification_passed',
   'verification_failed',
+  'nudge',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+/**
+ * 滞留条目的逐级提醒：级别越高，被提醒的家庭成员范围越大。
+ * 1 → 只提醒负责人；2 → 负责人 + 能下结论的整理者；3 → 全体家庭成员。
+ */
+export const NUDGE_MAX_LEVEL = 3;
+
+export const NUDGE_LEVEL_LABELS: Record<number, string> = {
+  1: '提醒负责人',
+  2: '提醒负责人与整理者',
+  3: '提醒全体家庭成员',
+};
 
 export const COMMENT_TARGET_TYPES = [
   'recipe',
