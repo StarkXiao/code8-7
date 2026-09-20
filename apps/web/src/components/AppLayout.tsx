@@ -50,6 +50,7 @@ export function AppLayout() {
               食谱
             </NavLink>
             <NavLink to={`${base}/members`}>成员</NavLink>
+            <NavLink to={`${base}/stats`}>贡献与积压</NavLink>
             <NavLink to={`${base}/notifications`}>通知</NavLink>
             <NavLink to={`${base}/activity`}>操作日志</NavLink>
           </nav>

@@ -13,6 +13,7 @@ const TYPE_LABEL: Record<NotificationType, string> = {
   verification_requested: '需要你做复做验证',
   verification_passed: '复做成功',
   verification_failed: '复做出现问题',
+  reminder: '滞留条目提醒',
 };
 
 const TYPE_COLOR: Record<NotificationType, string> = {
@@ -23,6 +24,7 @@ const TYPE_COLOR: Record<NotificationType, string> = {
   verification_requested: 'purple',
   verification_passed: 'green',
   verification_failed: 'red',
+  reminder: 'orange',
 };
 
 export function NotificationsPage() {

@@ -61,8 +61,17 @@ export const NOTIFICATION_TYPES = [
   'verification_requested',
   'verification_passed',
   'verification_failed',
+  'reminder',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+/**
+ * 滞留条目的逐级提醒级别：
+ * 1 级提醒负责人本人；2 级追加空间里的整理者；3 级知会全部家庭成员。
+ */
+export const REMINDER_LEVELS = [1, 2, 3] as const;
+export type ReminderLevel = (typeof REMINDER_LEVELS)[number];
+export const MAX_REMINDER_LEVEL: ReminderLevel = 3;
 
 export const COMMENT_TARGET_TYPES = [
   'recipe',
@@ -162,4 +171,46 @@ export const HEAT_LEVEL_LABELS: Record<HeatLevel, string> = {
   medium: '中火',
   medium_high: '中大火',
   high: '大火',
+};
+
+export const REMINDER_LEVEL_LABELS: Record<ReminderLevel, string> = {
+  1: '提醒负责人',
+  2: '请整理者协助',
+  3: '全家知悉',
+};
+
+/** 滞留条目负责人的来源：被指派的人 → 食谱创建者 → 空间所有者 */
+export const RESPONSIBLE_SOURCES = ['assignee', 'recipe_creator', 'workspace_owner'] as const;
+export type ResponsibleSource = (typeof RESPONSIBLE_SOURCES)[number];
+
+export const RESPONSIBLE_SOURCE_LABELS: Record<ResponsibleSource, string> = {
+  assignee: '被指派人',
+  recipe_creator: '食谱创建者',
+  workspace_owner: '空间所有者',
+};
+
+/** 成员贡献统计的口径：key 与 ActivityLog 的 action 对应（见服务端 stats 模块） */
+export const CONTRIBUTION_KINDS = [
+  'recordings',
+  'clips',
+  'itemsCreated',
+  'questionsAsked',
+  'answersGiven',
+  'specsResolved',
+  'verifications',
+  'comments',
+  'publishes',
+] as const;
+export type ContributionKind = (typeof CONTRIBUTION_KINDS)[number];
+
+export const CONTRIBUTION_KIND_LABELS: Record<ContributionKind, string> = {
+  recordings: '上传语音',
+  clips: '框选片段',
+  itemsCreated: '提出待澄清',
+  questionsAsked: '发起追问',
+  answersGiven: '回答追问',
+  specsResolved: '归纳规格',
+  verifications: '复做验证',
+  comments: '评论',
+  publishes: '发布版本',
 };

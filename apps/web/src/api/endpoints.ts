@@ -13,11 +13,14 @@ import type {
   CreateVerificationInput,
   IngredientDto,
   KitchenReferenceDto,
+  MemberStatsDto,
   NotificationDto,
   RecipeCounters,
   RecipeDto,
   RecipeVersionDto,
+  RemindResultDto,
   ResolvedSpec,
+  StaleItemDto,
   StepDto,
   UserDto,
   VagueCategory,
@@ -262,4 +265,18 @@ export const notificationApi = {
     unwrap<NotificationDto[]>(api.get('/notifications', { params: { unread: params?.unread } })),
   markRead: (input: { ids?: string[]; all?: boolean }) =>
     unwrap<{ updated: number }>(api.post('/notifications/read', input)),
+};
+
+/* ---------------- 贡献统计 / 滞留提醒 ---------------- */
+
+export const statsApi = {
+  memberStats: (workspaceId: string, staleDays = 3) =>
+    unwrap<{ staleDays: number; members: MemberStatsDto[] }>(
+      api.get(`/workspaces/${workspaceId}/member-stats`, { params: { staleDays } }),
+    ),
+  staleItems: (workspaceId: string, days = 3) =>
+    unwrap<{ staleDays: number; items: StaleItemDto[] }>(
+      api.get(`/workspaces/${workspaceId}/stale-items`, { params: { days } }),
+    ),
+  remind: (itemId: string) => unwrap<RemindResultDto>(api.post(`/vague-items/${itemId}/remind`)),
 };

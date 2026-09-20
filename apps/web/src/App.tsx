@@ -20,6 +20,7 @@ import { DiffPage } from './features/versions/DiffPage';
 import { VerifyPage } from './features/verification/VerifyPage';
 import { NotificationsPage } from './features/notification/NotificationsPage';
 import { ActivityPage } from './features/activity/ActivityPage';
+import { StatsPage } from './features/stats/StatsPage';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user);
@@ -85,6 +86,7 @@ export function App() {
         >
           <Route index element={<WorkspaceHomePage />} />
           <Route path="members" element={<MembersPage />} />
+          <Route path="stats" element={<StatsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="activity" element={<ActivityPage />} />
           <Route path="recipes/:recipeId" element={<RecipeDetailPage />} />

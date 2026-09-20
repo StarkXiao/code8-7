@@ -2,9 +2,12 @@ import type {
   AudioKind,
   CommentTargetType,
   Confidence,
+  ContributionKind,
   HeatLevel,
   NotificationType,
   RecipeStatus,
+  ReminderLevel,
+  ResponsibleSource,
   TranscriptStatus,
   VagueCategory,
   VagueStatus,
@@ -280,6 +283,55 @@ export interface KitchenReferenceDto {
   note: string | null;
   createdBy: string;
   createdAt: string;
+}
+
+/* ---------------- 成员贡献 / 积压 / 滞留提醒 ---------------- */
+
+/** 单个成员的贡献量与积压情况（按家庭空间统计） */
+export interface MemberStatsDto {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  role: WorkspaceRole;
+  /** 按口径分类的贡献次数，key 见 CONTRIBUTION_KINDS */
+  contributions: Record<ContributionKind, number>;
+  /** 全部贡献合计 */
+  contributionTotal: number;
+  backlog: {
+    /** 等着 TA 处理、尚未收口的条目数（负责人口径与滞留列表一致） */
+    openItems: number;
+    /** 其中已经超过滞留阈值的条数 */
+    staleItems: number;
+    /** 最久一条滞留了多少天；没有滞留时为 0 */
+    oldestStaleDays: number;
+  };
+}
+
+/** 长时间没人处理的条目，连同负责人与当前提醒级别一起返回 */
+export interface StaleItemDto {
+  itemId: string;
+  recipeId: string;
+  recipeTitle: string;
+  rawPhrase: string;
+  category: VagueCategory;
+  status: VagueStatus;
+  /** 距离最后一次处理已经过去多少天 */
+  staleDays: number;
+  updatedAt: string;
+  responsible: {
+    userId: string;
+    displayName: string;
+    source: ResponsibleSource;
+  };
+  /** 当前已提醒到第几级；0 表示还没提醒过。条目一有动静就重新从 0 计 */
+  reminderLevel: number;
+  lastRemindedAt: string | null;
+}
+
+export interface RemindResultDto {
+  itemId: string;
+  level: ReminderLevel;
+  notifiedUserIds: string[];
 }
 
 export interface RecipeVersionDto {
